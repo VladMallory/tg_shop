@@ -1,11 +1,9 @@
 // bot.go — это файл, который отвечает за запуск бота, передача
-// обновлений в обработчик и логирование действий пользователя
+// обновлений в обработчик
 package telegram
 
 import (
 	"log"
-	"salle_parfume/internal/logger"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -13,15 +11,13 @@ import (
 type Bot struct {
 	api     *tgbotapi.BotAPI
 	handler *Handler
-	logger  *logger.ActivityLogger
 }
 
 // запускаем бота
-func NewBot(api *tgbotapi.BotAPI, handler *Handler, activityLogger *logger.ActivityLogger) *Bot {
+func NewBot(api *tgbotapi.BotAPI, handler *Handler) *Bot {
 	return &Bot{
 		api:     api,
 		handler: handler,
-		logger:  activityLogger,
 	}
 }
 
@@ -41,16 +37,6 @@ func (b *Bot) Start() {
 		}
 
 		// 4. передаем сообщение в обработчик, он сам решит что с ним делать
-		start := time.Now()
 		b.handler.Handle(update)
-		duration := time.Since(start)
-
-		// 5. логируем в файл и консоль действия пользователя
-		b.logger.Log(logger.Activity{
-			UserID:  update.Message.From.ID,
-			Event:   "Message",
-			Text:    update.Message.Text,
-			Latency: duration,
-		})
 	}
 }
