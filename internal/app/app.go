@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"salle_parfume/internal/config"
 	"salle_parfume/internal/delivery/telegram"
+	"salle_parfume/internal/logger"
 	"salle_parfume/internal/service"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -23,7 +24,10 @@ func New() (*App, error) {
 		return nil, fmt.Errorf("ошибка загрузки конфига: %w", err)
 	}
 
-	// 2. Инициализируем бота
+	// 2. логирование
+	logSystem := logger.NewLogSystem()
+
+	// 3. Инициализируем бота
 	// Сначала создаем API
 	botAPI, err := tgbotapi.NewBotAPI(cfg.TelegramToken)
 	if err != nil {
@@ -34,7 +38,7 @@ func New() (*App, error) {
 	messageService := service.NewMessageService()
 
 	// Создаем Handler (он принимает API и Сервис сообщений)
-	handler := telegram.NewHandler(botAPI, messageService)
+	handler := telegram.NewHandler(botAPI, messageService, logSystem)
 
 	// Создаем самого бота (принимает API, Handler)
 	bot := telegram.NewBot(botAPI, handler)

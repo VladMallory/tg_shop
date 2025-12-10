@@ -1,5 +1,5 @@
 # ---------- Builder ----------
-FROM golang:1.25.4-alpine AS builder
+FROM golang:1.25.5-alpine AS builder
 
 WORKDIR /cache
 
@@ -16,7 +16,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # ---------- Runner ----------
-FROM golang:1.25.4-alpine
+FROM golang:1.25.5-alpine
 
 WORKDIR /app
 
