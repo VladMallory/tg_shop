@@ -1,0 +1,27 @@
+# Go build artifacts
+/go-build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env and secrets
+*.env
+
+# Text files
+*.txt
+
+# Vendor (если не используешь go mod vendor)
+vendor/
