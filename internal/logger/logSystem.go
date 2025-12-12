@@ -45,7 +45,7 @@ func (l *LogSystem) Close() {
 }
 
 // LogTelegram - логируем активность пользователя в телеграм
-func (l *LogSystem) LogTelegram(userID int64, text string, duration time.Duration) {
+func (l *LogSystem) LogTelegramUsersUse(userID int64, text string, duration time.Duration) {
 	// 1. проверяем, что файл не nil
 	if l.telegramLogFile == nil {
 		fmt.Fprintln(os.Stderr, "ошибка: файл для логов не инициализирован")

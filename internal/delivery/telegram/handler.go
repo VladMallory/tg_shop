@@ -3,27 +3,35 @@ package telegram
 
 import (
 	"log"
-	"salle_parfume/internal/logger"
-	"salle_parfume/internal/service"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// MessageService - интерфейс для сервиса отправки приветсвенного сообщение пользователю
+type MessageService interface {
+	GetWelcomeMessage() string
+}
+
+// ActivityLogger - интерфейс то как мы хотим чтобы было логирование телеграмма
+type ActivityLogger interface {
+	LogTelegramUsersUse(userID int64, text string, duration time.Duration)
+}
+
 // Handler — это структура, которая знает, как отвечать на сообщения.
 // В будущем мы добавим сюда services (Мозг), чтобы делать умные вещи.
 type Handler struct {
-	bot       *tgbotapi.BotAPI
-	services  *service.MessageService // сервис для обработки исходящих сообщений для пользователя
-	logSystem *logger.LogSystem
+	bot      *tgbotapi.BotAPI
+	services MessageService
+	logger   ActivityLogger
 }
 
-// NewHandler — конструктор
-func NewHandler(bot *tgbotapi.BotAPI, services *service.MessageService, logSystem *logger.LogSystem) *Handler {
+// NewHandler
+func NewHandler(bot *tgbotapi.BotAPI, services MessageService, logger ActivityLogger) *Handler {
 	return &Handler{
-		bot:       bot,
-		services:  services,
-		logSystem: logSystem,
+		bot:      bot,
+		services: services,
+		logger:   logger,
 	}
 }
 
@@ -49,7 +57,7 @@ func (h *Handler) Handle(update tgbotapi.Update) {
 	}
 
 	// 2. отправляем счетчик прорабу
-	h.logSystem.LogTelegram(update.Message.Chat.ID, update.Message.Text, time.Since(start))
+	h.logger.LogTelegramUsersUse(update.Message.Chat.ID, update.Message.Text, time.Since(start))
 }
 
 // handleStart - обрабатывает команду /start

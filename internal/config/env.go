@@ -1,8 +1,9 @@
-// задача: прочиать .env и вернуть значения
+// env.go читает .env и возвращает данные из переменных
 package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -15,7 +16,7 @@ type Config struct {
 func LoadConfig() (*Config, error) {
 	// 1. Загружаем переменные из .env
 	if err := godotenv.Load(); err != nil {
-		fmt.Println(".env пуст или не найден")
+		log.Fatal(".env пуст или файл не создан в дериктории")
 	}
 
 	// 2. Достаем токен
