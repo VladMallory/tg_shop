@@ -3,9 +3,11 @@ package app
 
 import (
 	"fmt"
+	"log"
 	"salle_parfume/internal/config"
 	"salle_parfume/internal/delivery/telegram"
 	"salle_parfume/internal/logger"
+	tgLogger "salle_parfume/internal/logger/telegram"
 	"salle_parfume/internal/service"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -14,7 +16,7 @@ import (
 // App - зависимости
 type App struct {
 	bot       *telegram.Bot     // telegram бот
-	logSystem *logger.LogSystem // логгер
+	logWriter *logger.LogWriter // логгер
 }
 
 // New эта сборки. Конструктор
@@ -27,7 +29,11 @@ func New() (*App, error) {
 	}
 
 	// 2. логирование
-	logSystem := logger.NewLogSystem()
+	logWriter, err := logger.NewLogWriter("telegram", "telegramUsersUse.txt")
+	if err != nil {
+		log.Fatal("ошибка в системе логирования", err)
+	}
+	activityLogger := tgLogger.NewLogger(logWriter)
 
 	// 3. Инициализируем бота
 	// Сначала создаем API
@@ -40,7 +46,7 @@ func New() (*App, error) {
 	messageService := service.NewMessageService()
 
 	// Создаем Handler (он принимает API и Сервис сообщений)
-	handler := telegram.NewHandler(botAPI, messageService, logSystem)
+	handler := telegram.NewHandler(botAPI, messageService, activityLogger)
 
 	// Создаем самого бота (принимает API, Handler)
 	bot := telegram.NewBot(botAPI, handler)
@@ -48,7 +54,7 @@ func New() (*App, error) {
 	// возвращаем готового, сборанного приложения
 	return &App{
 		bot:       bot,
-		logSystem: logSystem,
+		logWriter: logWriter,
 	}, nil
 }
 
@@ -56,7 +62,7 @@ func New() (*App, error) {
 // бизнес логика, без мусора if else и прочее
 func (a *App) Run() {
 	// закрываем файл логов
-	defer a.logSystem.Close()
+	defer a.logWriter.Close()
 
 	// запускаем бота
 	a.bot.Start()

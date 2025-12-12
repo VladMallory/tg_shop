@@ -4,54 +4,57 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"salle_parfume/internal/logger/telegram"
-	"time"
 )
 
-// LogSystem - главный прораб по логированию
-type LogSystem struct {
-	telegramLogFile *os.File // хранение файла
+// LogWriter - главный прораб по логированию
+type LogWriter struct {
+	file *os.File // передаем файл логов
 }
 
-// NewLogSystem - нанимаем прораба
-func NewLogSystem() *LogSystem {
-	// 1. путь где хранятся логи
-	dir := "logs/telegram"
-	filePath := filepath.Join(dir, "telegramUsersUse.txt")
+// NewLogWriter - нанимаем прораба
+func NewLogWriter(subDir, fileName string) (*LogWriter, error) {
+	// 1. определяем путь где хранятся логи
+	dir := filepath.Join("logs", subDir)
 
-	// 2. создаем папку если нету
+	// 2. то как будет в итоге называться файл
+	filePath := filepath.Join(dir, fileName)
+
+	// 3. создаем папку если нету
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		fmt.Fprintln(os.Stderr, "ошибка создания папки для логов:", err)
-		return nil
+		return nil, fmt.Errorf("ошибка создания папки для логов: %v", err)
 	}
 
-	// 3. открываем файл при записи один раз при запуске программы
+	// 4. открываем файл при записи один раз при запуске программы
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ошибка открытия файла для логов:", err)
-		return &LogSystem{}
+		return &LogWriter{
+			file: file,
+		}, nil
 	}
 
-	return &LogSystem{
-		telegramLogFile: file,
-	}
+	return &LogWriter{
+		file: file,
+	}, nil
 }
 
-func (l *LogSystem) Close() {
+// позволяет закрыть файл в app.go
+func (l *LogWriter) Close() {
 	// существует ли файл для логов
-	if l.telegramLogFile != nil {
-		l.telegramLogFile.Close()
+	if l.file != nil {
+		l.file.Close()
 	}
 }
 
-// LogTelegram - логируем активность пользователя в телеграм
-func (l *LogSystem) LogTelegramUsersUse(userID int64, text string, duration time.Duration) {
+// Write - пишет строку в файл
+func (l *LogWriter) Write(text string) {
 	// 1. проверяем, что файл не nil
-	if l.telegramLogFile == nil {
+	if l.file == nil {
 		fmt.Fprintln(os.Stderr, "ошибка: файл для логов не инициализирован")
 		return
 	}
 
-	// 2. начинаем логирование активности пользователя в телеграм
-	telegram.LogUserActivity(l.telegramLogFile, userID, text, duration)
+	if _, err := l.file.WriteString(text); err != nil {
+		fmt.Fprintln(os.Stderr, "ошибка записи в файл логов", err)
+	}
 }

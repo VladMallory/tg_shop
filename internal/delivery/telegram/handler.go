@@ -24,15 +24,23 @@ type Handler struct {
 	bot      *tgbotapi.BotAPI
 	services MessageService
 	logger   ActivityLogger
+	commands map[string]func(*tgbotapi.Message)
 }
 
 // NewHandler
 func NewHandler(bot *tgbotapi.BotAPI, services MessageService, logger ActivityLogger) *Handler {
-	return &Handler{
+	h := &Handler{
 		bot:      bot,
 		services: services,
 		logger:   logger,
+		commands: make(map[string]func(*tgbotapi.Message)),
 	}
+	h.initCommands()
+	return h
+}
+
+func (h *Handler) initCommands() {
+	h.commands["start"] = h.handleStart
 }
 
 // Handle - единая точка входа для обработки обновлений
@@ -46,14 +54,14 @@ func (h *Handler) Handle(update tgbotapi.Update) {
 
 	// Логика маршрутизации теперь здесь
 	if update.Message.IsCommand() {
-		switch update.Message.Command() {
-		case "start":
-			h.handleStart(update.Message)
-		default:
+		command := update.Message.Command()
+		if Handler, ok := h.commands[command]; ok {
+			Handler(update.Message)
+		} else {
 			h.handleUnknown(update.Message)
 		}
 	} else {
-		h.handleMessage(update.Message)
+		h.handleUnknown(update.Message)
 	}
 
 	// 2. отправляем счетчик прорабу
@@ -75,14 +83,6 @@ func (h *Handler) handleStart(message *tgbotapi.Message) {
 
 // handleUnknown — реакция на неизвестную команду
 func (h *Handler) handleUnknown(message *tgbotapi.Message) {
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Я не знаю такой команды")
-	h.bot.Send(msg)
-}
-
-// handleMessage — реакция на просто текст (не команду)
-func (h *Handler) handleMessage(message *tgbotapi.Message) {
-	// 1. Создаем сообщение
-	msg := tgbotapi.NewMessage(message.Chat.ID, "Я пока понимаю только /start")
-	// 2. Отправляем сообщение
+	msg := tgbotapi.NewMessage(message.Chat.ID, "Я не знаю такой команды, введите /start")
 	h.bot.Send(msg)
 }
