@@ -18,7 +18,6 @@ type Handler struct {
 	logSystem *logger.LogSystem
 }
 
-// не понятно
 // NewHandler — конструктор
 func NewHandler(bot *tgbotapi.BotAPI, services *service.MessageService, logSystem *logger.LogSystem) *Handler {
 	return &Handler{

@@ -12,7 +12,8 @@ import (
 
 // App - зависимости
 type App struct {
-	bot *telegram.Bot // telegram бот
+	bot       *telegram.Bot     // telegram бот
+	logSystem *logger.LogSystem // логгер
 }
 
 // New эта сборки. Конструктор
@@ -45,13 +46,17 @@ func New() (*App, error) {
 
 	// возвращаем готового, сборанного приложения
 	return &App{
-		bot: bot,
+		bot:       bot,
+		logSystem: logSystem,
 	}, nil
 }
 
 // Run сценарий работы. Этап запуска приложения
 // бизнес логика, без мусора if else и прочее
 func (a *App) Run() {
+	// закрываем файл логов
+	defer a.logSystem.Close()
+
 	// запускаем бота
 	a.bot.Start()
 }
