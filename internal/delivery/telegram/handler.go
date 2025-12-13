@@ -18,22 +18,29 @@ type ActivityLogger interface {
 	LogTelegramUsersUse(userID int64, text string, duration time.Duration)
 }
 
+// KeyboardProvider - интерфейс для предоставления клавиатур
+type KeyboardProvider interface {
+	GetMainMenu() tgbotapi.InlineKeyboardMarkup
+}
+
 // Handler — это структура, которая знает, как отвечать на сообщения.
 // В будущем мы добавим сюда services (Мозг), чтобы делать умные вещи.
 type Handler struct {
-	bot      *tgbotapi.BotAPI
-	services MessageService
-	logger   ActivityLogger
-	commands map[string]func(*tgbotapi.Message)
+	bot       *tgbotapi.BotAPI
+	services  MessageService
+	logger    ActivityLogger
+	keyboards KeyboardProvider
+	commands  map[string]func(*tgbotapi.Message)
 }
 
 // NewHandler
-func NewHandler(bot *tgbotapi.BotAPI, services MessageService, logger ActivityLogger) *Handler {
+func NewHandler(bot *tgbotapi.BotAPI, services MessageService, logger ActivityLogger, keyboards KeyboardProvider) *Handler {
 	h := &Handler{
-		bot:      bot,
-		services: services,
-		logger:   logger,
-		commands: make(map[string]func(*tgbotapi.Message)),
+		bot:       bot,
+		services:  services,
+		logger:    logger,
+		keyboards: keyboards,
+		commands:  make(map[string]func(*tgbotapi.Message)),
 	}
 	h.initCommands()
 	return h
@@ -75,7 +82,10 @@ func (h *Handler) handleStart(message *tgbotapi.Message) {
 	// 2. Создаем сообщение для конкретного юзера
 	msg := tgbotapi.NewMessage(message.Chat.ID, text)
 
-	// 3. Отправляем сообщение
+	// 3. добавляем клавитуру к /start
+	msg.ReplyMarkup = h.keyboards.GetMainMenu()
+
+	// 4. Отправляем сообщение
 	if _, err := h.bot.Send(msg); err != nil {
 		log.Printf("ошибка отправки сообщения: %v", err)
 	}

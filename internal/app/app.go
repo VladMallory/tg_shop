@@ -6,6 +6,7 @@ import (
 	"log"
 	"salle_parfume/internal/config"
 	"salle_parfume/internal/delivery/telegram"
+	"salle_parfume/internal/delivery/telegram/keyboards"
 	"salle_parfume/internal/logger"
 	tgLogger "salle_parfume/internal/logger/telegram"
 	"salle_parfume/internal/service"
@@ -45,8 +46,11 @@ func New() (*App, error) {
 	// создаем сервис исходных сообщений
 	messageService := service.NewMessageService()
 
+	// создаем сервис клавиатур
+	keyboardsService := keyboards.NewService()
+
 	// Создаем Handler (он принимает API и Сервис сообщений)
-	handler := telegram.NewHandler(botAPI, messageService, activityLogger)
+	handler := telegram.NewHandler(botAPI, messageService, activityLogger, keyboardsService)
 
 	// Создаем самого бота (принимает API, Handler)
 	bot := telegram.NewBot(botAPI, handler)

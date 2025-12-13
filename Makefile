@@ -16,8 +16,8 @@ build-amd64:
 
 .PHONY: run
 run:
-	docker rm -f $(NAME) 2>/dev/null || true
-	docker run --rm -it \
+	docker -f $(NAME) 2>/dev/null || true
+	docker run -it \
 		--platform linux/amd64 \
 		--env-file .env \
 		-v $(PWD):/app \
