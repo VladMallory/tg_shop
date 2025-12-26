@@ -16,7 +16,7 @@ build-amd64:
 
 .PHONY: run
 run:
-	docker -f $(NAME) 2>/dev/null || true
+	docker rm -f $(NAME) 2>/dev/null || true
 	docker run -it \
 		--platform linux/amd64 \
 		--env-file .env \
@@ -24,6 +24,9 @@ run:
 		-w /app \
 		--name $(NAME) \
 		$(IMAGE):amd64
+
+run-go:
+	go run ./cmd/myapp/main.go
 
 .PHONY: run-amd64
 run-amd64: build-amd64

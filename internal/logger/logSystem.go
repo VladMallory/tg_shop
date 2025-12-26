@@ -1,3 +1,4 @@
+// logSystem.go - общая система логирования в файлы
 package logger
 
 import (

@@ -24,7 +24,10 @@ WORKDIR /app
 COPY --from=builder /go /go
 
 # Git нужен для go get/mod
-RUN apk add --no-cache git
+RUN apk add --no-cache git build-base
+
+# Включаем CGO для sqlite3
+ENV CGO_ENABLED=1
 
 # Запуск Go напрямую (stdout не буферизуется)
 CMD ["go", "run", "./cmd/myapp"]

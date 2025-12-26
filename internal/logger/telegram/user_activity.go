@@ -1,3 +1,4 @@
+// user_activity.go - логирование активности пользователей телеграм
 package telegram
 
 import (
@@ -6,6 +7,7 @@ import (
 	"time"
 )
 
+// Logger - структура для логирования действий
 type Logger struct {
 	writer *logger.LogWriter
 }

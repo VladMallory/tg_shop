@@ -8,12 +8,13 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// Bot - структура, отвечающая за работу бота и получение обновлений
 type Bot struct {
 	api     *tgbotapi.BotAPI
 	handler *Handler
 }
 
-// запускаем бота
+// NewBot создает новый экземпляр бота
 func NewBot(api *tgbotapi.BotAPI, handler *Handler) *Bot {
 	return &Bot{
 		api:     api,
@@ -32,9 +33,9 @@ func (b *Bot) Start() {
 
 	// 3. цикл получения обновлений
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
+		// Мы не проверяем update.Message == nil здесь,
+		// так как это может быть CallbackQuery (нажатие на кнопку),
+		// который обрабатывается внутри handler.Handle
 
 		// 4. передаем сообщение в обработчик, он сам решит что с ним делать
 		b.handler.Handle(update)
